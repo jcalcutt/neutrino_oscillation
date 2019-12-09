@@ -7,3 +7,5 @@
 venv/
 keys/
 .idea/
+
+.ipynb_checkpoints/
