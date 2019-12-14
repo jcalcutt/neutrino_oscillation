@@ -1,28 +1,30 @@
 from flask import Flask
 from flask_restplus import Api, Resource
 
-from neutrino.neutrino import NeutrinoOscillation
-from neutrino.request_parser import stationary_parser, distance_series_parser, energy_series_parser
+from service.neutrino import NeutrinoOscillation
+from service.request_parser import stationary_parser, de_series_parser
+from service.restplus_model import stationary_model, series_model, series_single_model
+from service.mapper import NeutrinoMapper
 
 
 application = Flask(__name__)
 api = Api(application, version='0.0', title='Neutrino Oscillation',
-    description='A simple API to provide calculated neutrino oscillation metrics',
+    description='A simple API to provide calculated service oscillation metrics',
 )
 
 namespace = api.namespace('neutrinoOscillation', description='Neutrino Oscillation')
 
+restplus_models = [stationary_model, series_model, series_single_model]
 
-@namespace.route('/hello')
-class Hello(Resource):
-    def get(self):
-        return {"Hello": "World"}
+for model in restplus_models:
+    api.models[model.name] = model
 
 
-@namespace.route('/twoPhase/stationary')
+@namespace.route('/twoPhase')
 @namespace.expect(stationary_parser)
 class TwoPhase(Resource):
 
+    @api.marshal_with(stationary_model)
     def get(self):
         args = stationary_parser.parse_args()
         neutrino_type = args['type']
@@ -31,49 +33,32 @@ class TwoPhase(Resource):
 
         neutrino_oscillation = NeutrinoOscillation(oscillation_type=neutrino_type)
 
-        result = neutrino_oscillation.two_phase_oscillation_probability(energy=energy, distance=distance)
-        return {"probability": result}
+        probability = neutrino_oscillation.two_phase_oscillation_probability(distance_energy=distance/energy)
+        result = NeutrinoMapper.map_stationary(energy=energy, distance=distance, probability=probability)
+        return result
 
 
-@namespace.route('/twoPhase/series/distance')
-@namespace.expect(distance_series_parser)
-class TwoPhaseDistance(Resource):
+@namespace.route('/twoPhase/series')
+@namespace.expect(de_series_parser)
+class TwoPhaseDistanceEnergy(Resource):
 
+    @api.marshal_with(series_model)
     def get(self):
 
-        args = distance_series_parser.parse_args()
+        args = de_series_parser.parse_args()
         neutrino_type = args['type']
-        energy = args['energy']
-        min_distance =args['minDistance'] or 0
-        max_distance = args['maxDistance']
-        distance_interval = args['distanceInterval']
+        min_distance_energy =args['minDistanceEnergy'] or 0
+        max_distance_energy = args['maxDistanceEnergy']
+        distance_energy_interval = args['distanceEnergyInterval']
         neutrino_oscillation = NeutrinoOscillation(oscillation_type=neutrino_type)
-        distances, probabilities = neutrino_oscillation.two_phase_series(max_distance=max_distance,
-                                                                         min_distance=min_distance,
-                                                                         interval=distance_interval,
-                                                                         energy_val=energy, distance=True)
+        distances, probabilities = neutrino_oscillation.two_phase_series(max_val=max_distance_energy,
+                                                                         min_val=min_distance_energy,
+                                                                         interval=distance_energy_interval)
 
-        return {"distance": distances, "probability": probabilities}
+        return NeutrinoMapper.map_series(distance_energy=distances, probability=probabilities)
 
-
-@namespace.route('/twoPhase/series/energy')
-@namespace.expect(energy_series_parser)
-class TwoPhaseEnergy(Resource):
-
-    def get(self):
-        args = energy_series_parser.parse_args()
-        neutrino_type = args['type']
-        distance = args['distance']
-        min_energy = args['minEnergy'] or 0
-        max_energy = args['maxEnergy']
-        energy_interval = args['energyInterval']
-        neutrino_oscillation = NeutrinoOscillation(oscillation_type=neutrino_type)
-        energies, probabilities = neutrino_oscillation.two_phase_series(max_energy=max_energy,
-                                                                        min_energy=min_energy,
-                                                                        interval=energy_interval,
-                                                                        distance_val=distance, energy=True)
-
-        return {"energy": energies, "probability": probabilities}
 
 if __name__ == "__main__":
-    application.run(host="0.0.0.0")
+    application.run(debug=True, port=8003)
+
+#host="0.0.0.0"
