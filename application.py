@@ -6,11 +6,10 @@ from service.request_parser import stationary_parser, de_series_parser
 from service.restplus_model import stationary_model, series_model, series_single_model
 from service.mapper import NeutrinoMapper
 
-
 application = Flask(__name__)
 api = Api(application, version='0.0', title='Neutrino Oscillation',
-    description='A simple API to provide calculated service oscillation metrics',
-)
+          description='A simple API to provide calculated service oscillation metrics',
+          )
 
 namespace = api.namespace('neutrinoOscillation', description='Neutrino Oscillation')
 
@@ -23,7 +22,6 @@ for model in restplus_models:
 @namespace.route('/twoPhase')
 @namespace.expect(stationary_parser)
 class TwoPhase(Resource):
-
     @api.marshal_with(stationary_model)
     def get(self):
         args = stationary_parser.parse_args()
@@ -33,7 +31,7 @@ class TwoPhase(Resource):
 
         neutrino_oscillation = NeutrinoOscillation(oscillation_type=neutrino_type)
 
-        probability = neutrino_oscillation.two_phase_oscillation_probability(distance_energy=distance/energy)
+        probability = neutrino_oscillation.two_phase_oscillation_probability(distance_energy=distance / energy)
         result = NeutrinoMapper.map_stationary(energy=energy, distance=distance, probability=probability)
         return result
 
@@ -41,13 +39,11 @@ class TwoPhase(Resource):
 @namespace.route('/twoPhase/series')
 @namespace.expect(de_series_parser)
 class TwoPhaseDistanceEnergy(Resource):
-
     @api.marshal_with(series_model)
     def get(self):
-
         args = de_series_parser.parse_args()
         neutrino_type = args['type']
-        min_distance_energy =args['minDistanceEnergy'] or 0
+        min_distance_energy = args['minDistanceEnergy'] or 0
         max_distance_energy = args['maxDistanceEnergy']
         distance_energy_interval = args['distanceEnergyInterval']
         neutrino_oscillation = NeutrinoOscillation(oscillation_type=neutrino_type)
@@ -60,5 +56,4 @@ class TwoPhaseDistanceEnergy(Resource):
 
 if __name__ == "__main__":
     application.run(debug=True, port=8003)
-
-#host="0.0.0.0"
+    # host="0.0.0.0"

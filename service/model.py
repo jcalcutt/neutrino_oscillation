@@ -4,10 +4,12 @@ class StationaryModel:
         self.distance = distance
         self.probability = probability
 
+
 class SeriesModel:
     def __init__(self, distance_energy, probability):
         self.distance_energy = distance_energy
         self.probability = probability
+
 
 class SeriesWrapperModel:
     def __init__(self):

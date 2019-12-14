@@ -4,7 +4,6 @@ from service.model import StationaryModel, SeriesModel, SeriesWrapperModel
 
 
 class NeutrinoMapper:
-
     @staticmethod
     def map_stationary(energy: float, distance: float, probability: float) -> StationaryModel:
         """map stationary values to model
