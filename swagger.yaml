@@ -1,0 +1,126 @@
+swagger: '2.0'
+basePath: /
+paths:
+  /neutrinoOscillation/twoPhase:
+    parameters:
+      - name: type
+        in: query
+        type: string
+        required: true
+        description: Solar or atmospheric
+        enum:
+          - solar
+          - atmospheric
+        collectionFormat: multi
+      - name: energy
+        in: query
+        type: number
+        required: true
+        description: Energy in GeV
+      - name: distance
+        in: query
+        type: number
+        required: true
+        description: 'Distance from source, in km'
+    get:
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '#/definitions/stationary_model'
+      operationId: get_two_phase
+      parameters:
+        - name: X-Fields
+          in: header
+          type: string
+          format: mask
+          description: An optional fields mask
+      tags:
+        - neutrinoOscillation
+  /neutrinoOscillation/twoPhase/series:
+    parameters:
+      - name: type
+        in: query
+        type: string
+        required: true
+        description: Solar or atmospheric
+        enum:
+          - solar
+          - atmospheric
+        collectionFormat: multi
+      - name: maxDistanceEnergy
+        in: query
+        type: number
+        required: true
+        description: Max distance/energy
+      - name: minDistanceEnergy
+        in: query
+        type: number
+        description: 'Min distance/energy, default=0'
+      - name: distanceEnergyInterval
+        in: query
+        type: number
+        required: true
+        description: Distance/Energy Interval
+    get:
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '#/definitions/series_model'
+      operationId: get_two_phase_distance_energy
+      parameters:
+        - name: X-Fields
+          in: header
+          type: string
+          format: mask
+          description: An optional fields mask
+      tags:
+        - neutrinoOscillation
+info:
+  title: Neutrino Oscillation
+  version: '0.0'
+  description: API to provide calculated neutrino oscillation metrics
+produces:
+  - application/json
+consumes:
+  - application/json
+tags:
+  - name: neutrinoOscillation
+    description: Neutrino Oscillation
+definitions:
+  stationary_model:
+    required:
+      - distance
+      - energy
+      - probability
+    properties:
+      energy:
+        type: integer
+      distance:
+        type: integer
+      probability:
+        type: number
+    type: object
+  series_model:
+    properties:
+      series:
+        type: array
+        items:
+          $ref: '#/definitions/series_single_model'
+    type: object
+  series_single_model:
+    required:
+      - distanceOverEnergy
+      - probability
+    properties:
+      distanceOverEnergy:
+        type: number
+      probability:
+        type: number
+    type: object
+responses:
+  ParseError:
+    description: When a mask can't be parsed
+  MaskError:
+    description: When any error occurs on mask
