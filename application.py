@@ -8,7 +8,7 @@ from service.mapper import NeutrinoMapper
 
 application = Flask(__name__)
 api = Api(application, version='0.0', title='Neutrino Oscillation',
-          description='A simple API to provide calculated service oscillation metrics',
+          description='API to provide calculated neutrino oscillation metrics',
           )
 
 namespace = api.namespace('neutrinoOscillation', description='Neutrino Oscillation')
@@ -32,8 +32,8 @@ class TwoPhase(Resource):
         neutrino_oscillation = NeutrinoOscillation(oscillation_type=neutrino_type)
 
         probability = neutrino_oscillation.two_phase_oscillation_probability(distance_energy=distance / energy)
-        result = NeutrinoMapper.map_stationary(energy=energy, distance=distance, probability=probability)
-        return result
+
+        return NeutrinoMapper.map_stationary(energy=energy, distance=distance, probability=probability)
 
 
 @namespace.route('/twoPhase/series')
@@ -46,7 +46,9 @@ class TwoPhaseDistanceEnergy(Resource):
         min_distance_energy = args['minDistanceEnergy'] or 0
         max_distance_energy = args['maxDistanceEnergy']
         distance_energy_interval = args['distanceEnergyInterval']
+
         neutrino_oscillation = NeutrinoOscillation(oscillation_type=neutrino_type)
+
         distances, probabilities = neutrino_oscillation.two_phase_series(max_val=max_distance_energy,
                                                                          min_val=min_distance_energy,
                                                                          interval=distance_energy_interval)

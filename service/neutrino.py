@@ -29,7 +29,7 @@ class NeutrinoOscillation:
         probabilities
         """
 
-        dynamic_list = np.arange(min_val, max_val, interval)
-        probability_list = [self.two_phase_oscillation_probability(dist_en) for dist_en in dynamic_list]
+        dist_energy_list = np.arange(min_val, max_val, interval)
+        probability_list = [self.two_phase_oscillation_probability(dist_energy) for dist_energy in dist_energy_list]
 
-        return dynamic_list, probability_list
+        return dist_energy_list, probability_list
